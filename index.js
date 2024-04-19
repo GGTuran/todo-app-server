@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose');
+var jwt = require('jsonwebtoken');
 
 const port = 5000
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -77,7 +78,24 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
 
-    app.get('/todos',  async(req,res) =>{
+    app.get('/todos',
+    async (req,res,next) =>{
+      console.log('Call me Middle ware');
+      console.log(req.headers);
+      const token = req.headers.authorization;
+      const privateKey = "Secret";
+
+      const verifiedToken = jwt.verify(token, privateKey);
+      console.log(verifiedToken);
+      if(verifiedToken){
+        next();
+      }else{
+        console.log('You are not invited');
+      }
+
+     
+    }, 
+    async(req,res) =>{
         // const todo = await todoCollection.find({}).toArray();
         const todos = await Todo.find({});
         res.send(todos);
@@ -123,7 +141,45 @@ async function run() {
       const todo = await User.create(userData);
       console.log(todo);
       res.send(todo);
-    })
+    });
+
+    app.post("/login", async(req,res) =>{
+      const {email, password} = req.body;
+      const user = await User.findOne({
+        email,
+        password,
+      });
+
+      if(user) {
+     
+        const payLoad = {
+          name: user.name,
+          email:user.email,
+        };
+
+        const privateKey = "Secret";
+
+        const expirationTime = "1d";
+
+        const accessToken = jwt.sign(payLoad, privateKey, {
+          expiresIn: expirationTime,
+        });
+
+        const userResponse={
+          message:"Logged in",
+          data:{
+            accessToken
+
+          },
+        };
+        res.send(userResponse);
+      }    else{
+        
+        res.send("Incorrect")
+        }
+
+  
+    } )
 
 
 
