@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
@@ -11,6 +12,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 // middleware
 
 app.use(express.json());
+app.use(cors({ origin: 'http://localhost:5173' }));
 
 
 // 
@@ -79,22 +81,22 @@ async function run() {
 
 
     app.get('/todos',
-    async (req,res,next) =>{
-      console.log('Call me Middle ware');
-      console.log(req.headers);
-      const token = req.headers.authorization;
-      const privateKey = "Secret";
+    // async (req,res,next) =>{
+    //   console.log('Call me Middle ware');
+    //   console.log(req.headers);
+    //   const token = req.headers.authorization;
+    //   const privateKey = "Secret";
 
-      const verifiedToken = jwt.verify(token, privateKey);
-      console.log(verifiedToken);
-      if(verifiedToken){
-        next();
-      }else{
-        console.log('You are not invited');
-      }
+    //   const verifiedToken = jwt.verify(token, privateKey);
+    //   console.log(verifiedToken);
+    //   if(verifiedToken){
+    //     next();
+    //   }else{
+    //     console.log('You are not invited');
+    //   }
 
      
-    }, 
+    // }, 
     async(req,res) =>{
         // const todo = await todoCollection.find({}).toArray();
         const todos = await Todo.find({});
@@ -175,7 +177,7 @@ async function run() {
         res.send(userResponse);
       }    else{
         
-        res.send("Incorrect")
+        res.send({ message : "Incorrect"})
         }
 
   
